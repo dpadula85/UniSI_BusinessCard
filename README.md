@@ -216,7 +216,7 @@ All packages are available in TeX Live, MiKTeX, and on Overleaf.
 
 ## License
 
-This project is released under the GNU General Public License v3.0.
+This project is released under the MIT License.
 See [LICENSE](LICENSE) for the full text.
 
 The UNISI logo and brand assets are property of the Università di Siena and
