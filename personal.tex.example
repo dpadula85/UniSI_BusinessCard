@@ -15,6 +15,6 @@
 \newcommand{\cardAddress} {Your Address | City | Country}
 \newcommand{\cardQR}      {imgs/DP_qr/qrcode.pdf}
 \newcommand{\cardLogo}    {imgs/UNISI_vert_col-_CMYK.pdf}
-\newcommand{\cardSkyline} {imgs/skyline_UniSI_red.png}
+\newcommand{\cardSkyline} {imgs/skyline_UniSI_red.pdf}
 \newcommand{\cardUrl}     {institution.url}
 % ════════════════════════════════════════════════════════
