@@ -130,6 +130,14 @@ When `BLEED=false`:
 
 ---
 
+## Preview
+
+| Front | Back |
+|---|---|
+| ![Front](docs/card_preview-0.png) | ![Back](docs/card_preview-1.png) |
+
+---
+
 ## Privacy
 
 Personal data lives in `personal.tex` which is listed in `.gitignore`.
