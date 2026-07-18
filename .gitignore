@@ -11,5 +11,5 @@
 # Personal data — never commit this
 dp.tex
 
-# Generated output (remove this line to track PDFs in git)
-# output/
+# Generated PDFs
+output/

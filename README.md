@@ -1,8 +1,27 @@
 # Business Card — LaTeX / TikZ template
 
 A fully parametric LaTeX business card for the University of Siena, built with
-TikZ. Supports multiple output configurations (language, card format, bleed)
-controlled by a Makefile and build script.
+TikZ. Supports multiple output configurations (language, card format, bleed,
+and back face style) controlled by a Makefile and build script.
+
+---
+
+## Preview
+
+### Front face
+
+![Front US](docs/front_US.png)
+
+### Back face styles
+
+| Style | Preview |
+|---|---|
+| `same` — identical to front | ![Back same](docs/back_same_US.png) |
+| `mirror` — red panel on right | ![Back mirror](docs/back_mirror_US.png) |
+| `minimal` — name + skyline | ![Back minimal](docs/back_minimal_US.png) |
+
+> Previews show the US format, `EN` language, `nobleed` variant.
+> Print-ready versions include a 3 mm bleed zone and crop marks.
 
 ---
 
@@ -10,17 +29,18 @@ controlled by a Makefile and build script.
 
 ```
 .
-├── main.tex                   # Card source — do not edit personal data here
-├── personal.tex               # ← YOUR DATA — gitignored, never committed
-├── personal.tex.example       # Template to copy and fill in
-├── build_all.sh               # Builds all 8 combinations
-├── Makefile                   # Convenient build targets
+├── main.tex                        # Card source — do not edit personal data here
+├── personal.tex                    # ← YOUR DATA — gitignored, never committed
+├── personal.tex.example            # Template to copy and fill in
+├── build_all.sh                    # Builds all 24 combinations
+├── Makefile                        # Convenient build targets
+├── docs/                           # Preview images for this README
 ├── imgs/
 │   ├── UNISI_vert_col-_CMYK.pdf   # University logo (CMYK)
-│   ├── skyline_UniSI_red.png      # Siena skyline (transparent PNG)
+│   ├── skyline_UniSI_red.png       # Siena skyline (transparent PNG)
 │   └── DP_qr/
-│       └── qrcode.pdf             # QR code (UniRed on CardGray)
-└── output/                    # Generated PDFs (created by build system)
+│       └── qrcode.pdf              # QR code (UniRed on CardGray)
+└── output/                         # Generated PDFs (gitignored)
 ```
 
 ---
@@ -32,53 +52,50 @@ is **gitignored** and never committed to the repository.
 
 ```bash
 cp personal.tex.example personal.tex
-# then edit personal.tex with your details
+# edit personal.tex with your details
 ```
 
 ---
 
 ## Building
 
-### All combinations at once
+### All 24 combinations at once
 
 ```bash
 make           # or: bash build_all.sh
 ```
 
-Produces 8 PDFs in `output/`:
+Produces 24 PDFs in `output/` — one for every combination of:
 
+- **Format**: `US`, `EU`
+- **Language**: `EN`, `IT`
+- **Back style**: `same`, `mirror`, `minimal`
+- **Bleed**: `bleed`, `nobleed`
+
+Example output filenames:
 ```
 output/
-├── card_US_EN_bleed.pdf      # US format, English, print-ready
-├── card_US_EN_nobleed.pdf    # US format, English, screen preview
-├── card_US_IT_bleed.pdf
-├── card_US_IT_nobleed.pdf
-├── card_EU_EN_bleed.pdf
-├── card_EU_EN_nobleed.pdf
-├── card_EU_IT_bleed.pdf
-└── card_EU_IT_nobleed.pdf
+├── card_US_EN_minimal_bleed.pdf
+├── card_US_EN_minimal_nobleed.pdf
+├── card_EU_IT_mirror_bleed.pdf
+└── ...
 ```
 
-### Specific combinations
+### One specific card
 
 ```bash
-# One specific card
-make card FORMAT=US LANG=EN BLEED=true
+make card FORMAT=EU LANG=EN BLEED=true BACK=minimal
+```
 
-# All print-ready variants (with bleed)
-make print
+### Grouped shortcuts
 
-# All screen preview variants (no bleed)
-make preview
-
-# Both formats, English, with bleed
-make all_formats LANG=EN BLEED=true
-
-# Both languages, US format, no bleed
-make all_langs FORMAT=US BLEED=false
-
-# Clean and rebuild everything
-make clean && make
+```bash
+make print       # all 12 bleed variants (print-ready)
+make preview     # all 12 nobleed variants (screen preview)
+make all_backs   FORMAT=EU LANG=EN BLEED=false   # 3 back styles, fixed other options
+make all_formats LANG=EN  BLEED=true  BACK=minimal
+make all_langs   FORMAT=US BLEED=true BACK=mirror
+make clean && make   # clean rebuild
 ```
 
 ### Help
@@ -94,8 +111,9 @@ make help
 | Option | Values | Default | Description |
 |---|---|---|---|
 | `FORMAT` | `US` / `EU` | `US` | Card size |
-| `LANG` | `EN` / `IT` | `EN` | Card language |
-| `BLEED` | `true` / `false` | `true` | Bleed zone + crop marks |
+| `LANG` | `EN` / `IT` | `EN` | Language for role and department |
+| `BLEED` | `true` / `false` | `true` | 3 mm bleed zone + crop marks |
+| `BACK` | `same` / `mirror` / `minimal` | `minimal` | Back face design |
 
 ### Card dimensions
 
@@ -106,13 +124,11 @@ make help
 
 ### Back face styles
 
-Controlled by `\def\backstyle{...}` in `main.tex`:
-
 | Style | Description |
 |---|---|
-| `same` | Identical to the front face |
-| `mirror` | Same content, red panel on the right |
-| `minimal` | Name + role + Siena skyline watermark |
+| `same` | Identical to the front face (red panel left) |
+| `mirror` | Same content as front, red panel on the right |
+| `minimal` | Name, role, and department only — Siena skyline as background |
 
 ---
 
@@ -130,23 +146,15 @@ When `BLEED=false`:
 
 ---
 
-## Preview
-
-| Front | Back |
-|---|---|
-| ![Front](docs/card_preview-0.png) | ![Back](docs/card_preview-1.png) |
-
----
-
 ## Privacy
 
-Personal data lives in `personal.tex` which is listed in `.gitignore`.
-Only `personal.tex.example` (with placeholder values) is tracked by git.
+Personal data lives in `personal.tex` which is listed in `.gitignore` and is
+never committed to the repository. Only `personal.tex.example` (with
+placeholder values) is tracked by git.
 
-This means:
-- Your email, phone number and address are never pushed to GitHub.
-- Anyone cloning the repo gets the template structure and can fill in their own
-  data by copying `personal.tex.example` to `personal.tex`.
+This means your email, phone number, and address are never pushed to GitHub.
+Anyone cloning the repo gets the template and can fill in their own data by
+copying `personal.tex.example` to `personal.tex`.
 
 ---
 
@@ -208,6 +216,8 @@ All packages are available in TeX Live, MiKTeX, and on Overleaf.
 
 ## License
 
-The card layout and build scripts are released under the MIT License.
+This project is released under the GNU General Public License v3.0.
+See [LICENSE](LICENSE) for the full text.
+
 The UNISI logo and brand assets are property of the Università di Siena and
 are used here for personal institutional purposes only — do not redistribute.

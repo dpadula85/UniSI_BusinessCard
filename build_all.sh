@@ -2,7 +2,9 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # build_all.sh — Generate business cards for all option combinations
 #
-# Produces 8 PDFs (2 bleed × 2 lang × 2 format) in the output/ directory.
+# Produces 24 PDFs (2 bleed × 2 lang × 2 format × 3 back styles)
+# in the output/ directory.
+#
 # Requires: pdflatex (with standalone, tikz, fontawesome5, pdfx, helvet, etc.)
 #
 # Usage:
@@ -31,28 +33,27 @@ declare -A CARD_H=( [US]="50.8" [EU]="55" )
 BLEEDS=(true false)
 LANGS=(EN IT)
 FORMATS=(US EU)
+BACKS=(same mirror minimal)
 
 # ── Helper: compile one combination ─────────────────────────────────────────
 compile() {
-  local bleed="$1"   # true | false
-  local lang="$2"    # EN | IT
-  local fmt="$3"     # US | EU
+  local bleed="$1"
+  local lang="$2"
+  local fmt="$3"
+  local back="$4"
 
   local cw="${CARD_W[$fmt]}"
   local ch="${CARD_H[$fmt]}"
 
   local bleedtag
   [[ "$bleed" == "true" ]] && bleedtag="bleed" || bleedtag="nobleed"
-  local outname="card_${fmt}_${lang}_${bleedtag}"
+  local outname="card_${fmt}_${lang}_${back}_${bleedtag}"
   local logfile="${AUXDIR}/${outname}.log"
 
   echo "  Building: ${outname}.pdf ..."
 
-  # Pass all options as \def before \input{main}
-  # \USCard/\EUCard are NOT called here — we set \cardW and \cardH directly
-  local defs="\def\withbleed{${bleed}}\def\lang{${lang}}\def\backstyle{minimal}\def\cardW{${cw}}\def\cardH{${ch}}\input{${TEXFILE}}"
+  local defs="\def\withbleed{${bleed}}\def\lang{${lang}}\def\backstyle{${back}}\def\cardW{${cw}}\def\cardH{${ch}}\input{${TEXFILE}}"
 
-  # Run pdflatex twice for stable multi-page standalone output
   for pass in 1 2; do
     pdflatex \
       -interaction=nonstopmode \
@@ -71,7 +72,6 @@ compile() {
     fi
   done
 
-  # Move final PDF to output/
   if [[ -f "${AUXDIR}/${outname}.pdf" ]]; then
     mv "${AUXDIR}/${outname}.pdf" "${OUTDIR}/${outname}.pdf"
     echo "  → ${OUTDIR}/${outname}.pdf  ✓"
@@ -89,7 +89,9 @@ echo "────────────────────────�
 for bleed in "${BLEEDS[@]}"; do
   for lang in "${LANGS[@]}"; do
     for fmt in "${FORMATS[@]}"; do
-      compile "$bleed" "$lang" "$fmt" || true
+      for back in "${BACKS[@]}"; do
+        compile "$bleed" "$lang" "$fmt" "$back" || true
+      done
     done
   done
 done

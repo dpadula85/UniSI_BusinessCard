@@ -14,31 +14,59 @@
 
 % ════════════════════════════════════════════════════════
 % PERSONAL DATA — stored in personal.tex (gitignored)
-% Copy personal.tex.example to personal.tex and fill in your details
+% Copy personal.tex.example to personal.tex and fill in
 % ════════════════════════════════════════════════════════
 \input{personal}
 % ════════════════════════════════════════════════════════
 
 % ════════════════════════════════════════════════════════
-% OUTPUT OPTIONS — edit only this section
+% OUTPUT OPTIONS — the only section to edit for output
+%
+% When built via Makefile/build_all.sh, all options are
+% passed externally and the defaults below are ignored.
+% When used standalone (Overleaf / local pdflatex), use
+% \USCard or \EUCard and set the other options directly.
 % ════════════════════════════════════════════════════════
-\def\withbleed{true}     % true | false — bleed zone + crop marks
-\def\lang{EN}            % EN  | IT    — language
-\def\backstyle{minimal}  % same | mirror | minimal — back face style
-\newcommand{\USCard}{\def\cardW{88.9}\def\cardH{50.8}}
-\newcommand{\EUCard}{\def\cardW{85}  \def\cardH{55}  }
-\USCard                  % \USCard | \EUCard — card format
+
+% ── Card format ──────────────────────────────────────────
+% \USCard and \EUCard set \cardW and \cardH.
+% They are no-ops when cardW/cardH are passed externally.
+\newcommand{\USCard}{%
+  \renewcommand{\cardW}{88.9}%
+  \renewcommand{\cardH}{50.8}%
+}
+\newcommand{\EUCard}{%
+  \renewcommand{\cardW}{85}%
+  \renewcommand{\cardH}{55}%
+}
+
+% Defaults (overridden externally by build script, or by
+% calling \USCard / \EUCard below)
+\providecommand{\cardW}{88.9}  % mm — card width
+\providecommand{\cardH}{50.8}  % mm — card height
+
+% ── Standalone usage: edit these four lines ──────────────
+\USCard                              % \USCard | \EUCard
+\providecommand{\withbleed}{true}  % default if not set externally
+\edef\withbleed{\withbleed}        % normalize to \def-level token
+\providecommand{\lang}{EN}           % EN | IT
+\edef\lang{\lang}
+\providecommand{\backstyle}{minimal} % same | mirror | minimal
+\edef\backstyle{\backstyle}
+% ── Script usage: all of the above are set externally ────
+
 % ════════════════════════════════════════════════════════
 
 % ── Red panel fraction ───────────────────────────────────
 \def\redfrac{0.25}
 
 % ── Bleed and crop mark settings ─────────────────────────
-\def\bleedmm{3}   % mm — bleed width
-\def\cropmm{3}    % mm — crop mark length
-\def\cropgapmm{1} % mm — gap between card edge and crop mark
+\def\bleedmm{3}    % mm — bleed width
+\def\cropmm{3}     % mm — crop mark length
+\def\cropgapmm{1}  % mm — gap between card edge and crop mark
 
 % ── Resolve bleed: BL=bleedmm if true, BL=0 if false ────
+\edef\withbleed{\withbleed}  % normalize for \ifx comparison
 \def\bleedON{true}
 \ifx\withbleed\bleedON
   \pgfmathsetmacro{\BL}{\bleedmm}
@@ -75,17 +103,17 @@
     \begin{scope}[overlay]
       \tikzset{crop/.style={black, line width=0.25pt}}
       % bottom-left
-      \draw[crop] (-\CG mm-\CL mm, 0)    -- (-\CG mm, 0);
-      \draw[crop] (0, -\CG mm-\CL mm)    -- (0, -\CG mm);
+      \draw[crop] (-\CG mm-\CL mm, 0)      -- (-\CG mm, 0);
+      \draw[crop] (0, -\CG mm-\CL mm)      -- (0, -\CG mm);
       % bottom-right
-      \draw[crop] (\CW mm+\CG mm, 0)     -- (\CW mm+\CG mm+\CL mm, 0);
+      \draw[crop] (\CW mm+\CG mm, 0)       -- (\CW mm+\CG mm+\CL mm, 0);
       \draw[crop] (\CW mm, -\CG mm-\CL mm) -- (\CW mm, -\CG mm);
       % top-left
       \draw[crop] (-\CG mm-\CL mm, \CH mm) -- (-\CG mm, \CH mm);
-      \draw[crop] (0, \CH mm+\CG mm)     -- (0, \CH mm+\CG mm+\CL mm);
+      \draw[crop] (0, \CH mm+\CG mm)       -- (0, \CH mm+\CG mm+\CL mm);
       % top-right
-      \draw[crop] (\CW mm+\CG mm, \CH mm) -- (\CW mm+\CG mm+\CL mm, \CH mm);
-      \draw[crop] (\CW mm, \CH mm+\CG mm) -- (\CW mm, \CH mm+\CG mm+\CL mm);
+      \draw[crop] (\CW mm+\CG mm, \CH mm)  -- (\CW mm+\CG mm+\CL mm, \CH mm);
+      \draw[crop] (\CW mm, \CH mm+\CG mm)  -- (\CW mm, \CH mm+\CG mm+\CL mm);
     \end{scope}%
   \fi%
 }
