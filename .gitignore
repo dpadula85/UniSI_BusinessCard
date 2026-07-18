@@ -1,0 +1,15 @@
+# LaTeX auxiliary files
+.aux/
+*.aux
+*.log
+*.xmpdata
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.out
+
+# Personal data — never commit this
+dp.tex
+
+# Generated output (remove this line to track PDFs in git)
+# output/

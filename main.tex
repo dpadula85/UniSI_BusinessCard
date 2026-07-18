@@ -1,0 +1,238 @@
+\documentclass[multi=tikzpicture]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{calc, positioning}
+\usepackage[cmyk]{xcolor}
+\usepackage{helvet}
+\usepackage{graphicx}
+\usepackage[a-1b]{pdfx}
+\usepackage{fontawesome5}
+\renewcommand{\familydefault}{\sfdefault}
+
+% ── Colors ───────────────────────────────────────────────
+\definecolor{CardGray}{cmyk}{0.0, 0.0, 0.0, 0.08}
+\definecolor{UniRed}{cmyk}{0.0, 1.0, 0.819, 0.310}
+
+% ════════════════════════════════════════════════════════
+% PERSONAL DATA — stored in personal.tex (gitignored)
+% Copy personal.tex.example to personal.tex and fill in your details
+% ════════════════════════════════════════════════════════
+\input{personal}
+% ════════════════════════════════════════════════════════
+
+% ════════════════════════════════════════════════════════
+% OUTPUT OPTIONS — edit only this section
+% ════════════════════════════════════════════════════════
+\def\withbleed{true}     % true | false — bleed zone + crop marks
+\def\lang{EN}            % EN  | IT    — language
+\def\backstyle{minimal}  % same | mirror | minimal — back face style
+\newcommand{\USCard}{\def\cardW{88.9}\def\cardH{50.8}}
+\newcommand{\EUCard}{\def\cardW{85}  \def\cardH{55}  }
+\USCard                  % \USCard | \EUCard — card format
+% ════════════════════════════════════════════════════════
+
+% ── Red panel fraction ───────────────────────────────────
+\def\redfrac{0.25}
+
+% ── Bleed and crop mark settings ─────────────────────────
+\def\bleedmm{3}   % mm — bleed width
+\def\cropmm{3}    % mm — crop mark length
+\def\cropgapmm{1} % mm — gap between card edge and crop mark
+
+% ── Resolve bleed: BL=bleedmm if true, BL=0 if false ────
+\def\bleedON{true}
+\ifx\withbleed\bleedON
+  \pgfmathsetmacro{\BL}{\bleedmm}
+\else
+  \pgfmathsetmacro{\BL}{0}
+\fi
+
+% ── Pre-compute all dimensions once ──────────────────────
+\pgfmathsetmacro{\CW}{\cardW}
+\pgfmathsetmacro{\CH}{\cardH}
+\pgfmathsetmacro{\CL}{\cropmm}
+\pgfmathsetmacro{\CG}{\cropgapmm}
+\pgfmathsetmacro{\redW}{\redfrac*\CW}
+\pgfmathsetmacro{\redCX}{0.5*\redW}
+\pgfmathsetmacro{\logoW}{0.85*\redW}
+\pgfmathsetmacro{\addrY}{0.02*\CH}
+\pgfmathsetmacro{\sepGap}{0.04*\CH}
+\pgfmathsetmacro{\nameY}{0.97*\CH}
+\pgfmathsetmacro{\topBlockBot}{\nameY - 0.12*\CH - 0.09*\CH - 0.02*\CH - 0.14*\CH}
+\pgfmathsetmacro{\sepTopY}{\topBlockBot - \sepGap}
+\pgfmathsetmacro{\addrTopY}{\addrY + 0.08*\CH}
+\pgfmathsetmacro{\sepBotY}{\addrTopY + \sepGap}
+\pgfmathsetmacro{\contactY}{0.5*(\sepTopY+\sepBotY)}
+
+% ── Language-resolved role and department ────────────────
+\newcommand{\cardRole}{\csname cardRole\lang\endcsname}
+\newcommand{\cardDept}{\csname cardDept\lang\endcsname}
+
+% ────────────────────────────────────────────────────────
+% Crop marks — no-op when \withbleed is false
+% ────────────────────────────────────────────────────────
+\newcommand{\cropmarks}{%
+  \ifx\withbleed\bleedON
+    \begin{scope}[overlay]
+      \tikzset{crop/.style={black, line width=0.25pt}}
+      % bottom-left
+      \draw[crop] (-\CG mm-\CL mm, 0)    -- (-\CG mm, 0);
+      \draw[crop] (0, -\CG mm-\CL mm)    -- (0, -\CG mm);
+      % bottom-right
+      \draw[crop] (\CW mm+\CG mm, 0)     -- (\CW mm+\CG mm+\CL mm, 0);
+      \draw[crop] (\CW mm, -\CG mm-\CL mm) -- (\CW mm, -\CG mm);
+      % top-left
+      \draw[crop] (-\CG mm-\CL mm, \CH mm) -- (-\CG mm, \CH mm);
+      \draw[crop] (0, \CH mm+\CG mm)     -- (0, \CH mm+\CG mm+\CL mm);
+      % top-right
+      \draw[crop] (\CW mm+\CG mm, \CH mm) -- (\CW mm+\CG mm+\CL mm, \CH mm);
+      \draw[crop] (\CW mm, \CH mm+\CG mm) -- (\CW mm, \CH mm+\CG mm+\CL mm);
+    \end{scope}%
+  \fi%
+}
+
+% ────────────────────────────────────────────────────────
+% Red panel — left (bleed-aware)
+% ────────────────────────────────────────────────────────
+\newcommand{\redpanelleft}{%
+  \fill[UniRed]   (-\BL mm, -\BL mm) rectangle (\redW mm,       \CH mm+\BL mm);%
+  \fill[CardGray] (\redW mm, -\BL mm) rectangle (\CW mm+\BL mm, \CH mm+\BL mm);%
+  \node at (\redCX mm, 0.55*\CH mm)
+    {\includegraphics[width=\logoW mm]{\cardLogo}};%
+  \node[text=white, font=\fontsize{8}{9}\selectfont]
+    at (\redCX mm, 0.07*\CH mm) {\cardUrl};%
+}
+
+% ────────────────────────────────────────────────────────
+% Red panel — right (bleed-aware)
+% ────────────────────────────────────────────────────────
+\newcommand{\redpanelright}{%
+  \pgfmathsetmacro{\redLX}{(1-\redfrac)*\CW}%
+  \pgfmathsetmacro{\redRCX}{\redLX + 0.5*\redW}%
+  \fill[CardGray] (-\BL mm,   -\BL mm) rectangle (\redLX mm,     \CH mm+\BL mm);%
+  \fill[UniRed]   (\redLX mm, -\BL mm) rectangle (\CW mm+\BL mm, \CH mm+\BL mm);%
+  \node at (\redRCX mm, 0.55*\CH mm)
+    {\includegraphics[width=\logoW mm]{\cardLogo}};%
+  \node[text=white, font=\fontsize{8}{9}\selectfont]
+    at (\redRCX mm, 0.07*\CH mm) {\cardUrl};%
+}
+
+% ────────────────────────────────────────────────────────
+% Contact block
+% #1 = left x (mm), #2 = right x (mm)
+% ────────────────────────────────────────────────────────
+\newcommand{\contactblock}[2]{%
+  \pgfmathsetmacro{\grayLX}{#1}%
+  \pgfmathsetmacro{\grayRX}{#2}%
+  \pgfmathsetmacro{\qrsize}{0.20*\CH}%
+  % name
+  \node[anchor=north west, text=UniRed, align=left,
+        font=\fontsize{15}{17}\selectfont]
+    (name) at (\grayLX mm, \nameY mm) {\cardName};%
+  % role
+  \node[anchor=north west, text=UniRed, align=left,
+        font=\itshape\fontsize{7}{9}\selectfont]
+    (role) at (name.south west) {\cardRole};%
+  % department
+  \node[anchor=north west, text=UniRed, align=left,
+        font=\itshape\fontsize{8}{9}\selectfont,
+        yshift=-0.015*\CH mm]
+    (dept) at (role.south west) {\cardDept};%
+  % top separator
+  \draw[UniRed, line width=0.3pt]
+    (\grayLX mm, \sepTopY mm) -- (\grayRX mm, \sepTopY mm);%
+  % contacts
+  \node[anchor=north west, text=UniRed, align=left,
+        font=\fontsize{7}{8}\selectfont]
+    at (\grayLX mm, \sepTopY mm - 0.5mm){%
+      \faIcon{phone}\hspace{1mm} \cardPhone\\[1mm]%
+      \faIcon{mobile-alt}\hspace{1mm} \cardMobile\\[1mm]%
+      \faIcon{envelope}\hspace{1mm} \cardEmail\\[1mm]%
+      \faIcon{globe}\hspace{1mm} \cardWeb\\[1mm]%
+      \faIcon{orcid}\hspace{1mm} \cardOrcid%
+    };%
+  % QR code
+  \node[anchor=north east]
+    at (\grayRX mm, \contactY mm + 2.0mm)
+    {\includegraphics[width=\qrsize mm]{\cardQR}};%
+  % bottom separator
+  \draw[UniRed, line width=0.3pt]
+    (\grayLX mm, \sepBotY mm) -- (\grayRX mm, \sepBotY mm);%
+  % address
+  \node[anchor=south west, text=UniRed, align=left,
+        font=\fontsize{7}{8}\selectfont]
+    at (\grayLX mm, \addrY mm) {\cardAddress};%
+}
+
+% ────────────────────────────────────────────────────────
+% Shared card face (front + backcardsame)
+% ────────────────────────────────────────────────────────
+\newcommand{\cardface}{%
+  \pgfmathsetmacro{\grayL}{\redW + 0.05*\CW}%
+  \pgfmathsetmacro{\grayR}{0.97*\CW}%
+  \begin{tikzpicture}
+    \useasboundingbox (-\BL mm, -\BL mm) rectangle (\CW mm+\BL mm, \CH mm+\BL mm);
+    \redpanelleft%
+    \contactblock{\grayL}{\grayR}%
+    \cropmarks%
+  \end{tikzpicture}%
+}
+
+\newcommand{\frontcard}{\cardface}
+
+% ────────────────────────────────────────────────────────
+% Back styles
+% ────────────────────────────────────────────────────────
+\newcommand{\backcardsame}{\cardface}
+
+\newcommand{\backcardmirror}{%
+  \pgfmathsetmacro{\grayL}{0.03*\CW}%
+  \pgfmathsetmacro{\grayR}{(1-\redfrac-0.05)*\CW}%
+  \begin{tikzpicture}
+    \useasboundingbox (-\BL mm, -\BL mm) rectangle (\CW mm+\BL mm, \CH mm+\BL mm);
+    \redpanelright%
+    \contactblock{\grayL}{\grayR}%
+    \cropmarks%
+  \end{tikzpicture}%
+}
+
+\newcommand{\backcardminimal}{%
+  \pgfmathsetmacro{\redLX}{(1-\redfrac)*\CW}%
+  \pgfmathsetmacro{\grayCX}{0.5*\redLX}%
+  \pgfmathsetmacro{\sepRX}{(1-\redfrac)*0.95*\CW}%
+  \begin{tikzpicture}
+    \useasboundingbox (-\BL mm, -\BL mm) rectangle (\CW mm+\BL mm, \CH mm+\BL mm);
+    \redpanelright%
+    \begin{scope}
+      \clip (0, 0) rectangle (\redLX mm, 0.50*\CH mm);
+      \node[opacity=1.00, anchor=west]
+        at (0, 0.30*\CH mm)
+        {\includegraphics[width=\redLX mm]{\cardSkyline}};
+    \end{scope}%
+    \node[text=UniRed, align=center,
+          font=\fontsize{15}{17}\selectfont]
+      (name) at (\grayCX mm, 0.82*\CH mm) {\cardName};%
+    \node[anchor=north, text=UniRed, align=center,
+          font=\itshape\fontsize{7}{9}\selectfont, yshift=-2pt]
+      (role) at (name.south) {\cardRole};%
+    \draw[UniRed, line width=0.3pt]
+      (0.05*\CW mm, 0.60*\CH mm) -- (\sepRX mm, 0.60*\CH mm);%
+    \node[anchor=north, text=UniRed, align=center,
+          font=\itshape\fontsize{8}{9}\selectfont, yshift=-2pt]
+      at (\grayCX mm, 0.60*\CH mm) {\cardDept};%
+    \cropmarks%
+  \end{tikzpicture}%
+}
+
+% ── Dispatcher ───────────────────────────────────────────
+\newcommand{\backcard}{%
+  \csname backcard\backstyle\endcsname%
+}
+
+% ────────────────────────────────────────────────────────
+\begin{document}
+
+\frontcard
+
+\backcard
+
+\end{document}
